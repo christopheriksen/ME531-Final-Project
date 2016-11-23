@@ -36,4 +36,61 @@ A_new = T*A*T_inv
 B_new = T*B
 %C_new = C*T_inv
 
+syms s
+pole_1 = -100;
+pole_2 = -100;
+pole_3 = -100;
+pole_4 = -100;
+pole_5 = -100;
+pole_6 = -100;
+
+expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6))
+
+a5 = 8;
+a4 = 28;
+a3 = 56;
+a2 = 68;
+a1 = 48;
+a0 = 16;
+
+A_eq = [0 1 0 0 0 0;
+        0 0 1 0 0 0;
+        0 0 0 1 0 0;
+        0 0 0 0 1 0;
+        0 0 0 0 0 1;
+        -a0 -a1 -a2 -a3 -a4 -a5;];
+
 % A_eq = A_new + B_new * K_new
+%syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
+%K_new = [k11 k12 k13 k14 k15 k16;
+%         k21 k22 k23 k24 k25 k26];
+     
+%BK = [0 0 0 0 0 0;
+%      0 0 0 0 0 0;
+%      k11 k12 k13 k14 k15 k16;
+%      0 0 0 0 0 0;
+%      0 0 0 0 0 0;
+%      k21 k22 k23 k24 k25 k26]
+
+BK = A_eq - A_new
+
+k11 = BK(3, 1);
+k12 = BK(3, 2);
+k13 = BK(3, 3);
+k14 = BK(3, 4);
+k15 = BK(3, 5);
+k16 = BK(3, 6);
+
+k21 = BK(6, 1);
+k22 = BK(6, 2);
+k23 = BK(6, 3);
+k24 = BK(6, 4);
+k25 = BK(6, 5);
+k26 = BK(6, 6);
+
+K_new = [k11 k12 k13 k14 k15 k16;
+         k21 k22 k23 k24 k25 k26];
+     
+K = K_new*T
+
+B*K
