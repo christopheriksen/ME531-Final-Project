@@ -1,0 +1,15 @@
+K 13
+svn:externals
+V 213
+cosspace.m svn+ssh://modsnake.homeip.net/home/samba/geomotion/geomotionsvn/research/Utilities/cosspace.m
+
+softspace.m svn+ssh://modsnake.homeip.net/home/samba/geomotion/geomotionsvn/research/Utilities/softspace.m
+
+K 10
+svn:ignore
+V 64
+demonstration_movie
+demonstration_movie_2
+demonstration_movie_1
+
+END
