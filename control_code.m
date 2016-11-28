@@ -25,9 +25,15 @@ B = [0 0;
     0 0;
     0 0];
 
-% determine if system is controllable
+C = [0 0 0 0 1 0 0 0;
+     0 0 0 0 0 0 1 0];
+
+% determine if system is controllable and observable
 P = horzcat(B, A*B, (A^2)*B, (A^3)*B);
 rank(P)
+
+Q = vertcat(C, C*A, C*(A^2), C*(A^3));
+rank(Q)
 
 % transform to canonical form
 M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)), (A^3)*(B(:, 2)));
@@ -41,7 +47,11 @@ T_inv = inv(T);
 
 A_new = T*A*T_inv
 B_new = T*B
-%C_new = C*T_inv
+C_new = C*T_inv
+
+A_obs = transpose(A_new)
+B_obs = transpose(C_new)
+C_obs = transpose(B_new)
 
 syms s
 pole_1 = -1;
@@ -110,4 +120,37 @@ K_new = [k11 k12 k13 k14 k15 k16 k17 k18;
      
 K = K_new*T
 
-B*K
+BK = B*K
+
+%A_eq_obs = A_obs - L*C_obs
+
+pole_1 = -10;
+pole_2 = -10;
+pole_3 = -10;
+pole_4 = -10;
+pole_5 = -10;
+pole_6 = -10;
+pole_7 = -10;
+pole_8 = -10;
+
+expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
+
+a7_obs = 80;
+a6_obs = 2800;
+a5_obs = 56000;
+a4_obs = 700000;
+a3_obs = 5600000;
+a2_obs = 28000000;
+a1_obs = 80000000;
+a0_obs = 100000000;
+
+A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
+            1 0 0 0 0 0 0 -a1_obs;
+            0 1 0 0 0 0 0 -a2_obs;
+            0 0 1 0 0 0 0 -a3_obs;
+            0 0 0 1 0 0 0 -a4_obs;
+            0 0 0 0 1 0 0 -a5_obs;
+            0 0 0 0 0 1 0 -a6_obs;
+            0 0 0 0 0 0 1 -a7_obs;]
+
+LC = A_obs - A_eq_obs
