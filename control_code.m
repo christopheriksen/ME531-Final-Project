@@ -69,26 +69,28 @@ C_obs = C*T_ob
 transpose(B_co);
 
 
+% calculate K
 syms s
-pole_1 = -1;
-pole_2 = -1;
+
+pole_1 = -.5;
+pole_2 = -.5;
 pole_3 = -1;
 pole_4 = -1;
-pole_5 = -1;
-pole_6 = -1;
-pole_7 = -1;
-pole_8 = -1;
+pole_5 = -1.5;
+pole_6 = -1.5;
+pole_7 = -2;
+pole_8 = -2;
 
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
 
-a7 = 8;
-a6 = 28;
-a5 = 56;
-a4 = 70;
-a3 = 56;
-a2 = 28;
-a1 = 8;
-a0 = 1;
+a7 = 10;
+a6 = 85/2;
+a5 = 100;
+a4 = 2273/16;
+a3 = 995/8;
+a2 = 1045/16;
+a1 = 75/4;
+a0 = 9/4;
 
 A_eq = [0 1 0 0 0 0 0 0;
         0 0 1 0 0 0 0 0;
@@ -98,10 +100,26 @@ A_eq = [0 1 0 0 0 0 0 0;
         0 0 0 0 0 0 1 0;
         0 0 0 0 0 0 0 1;
         -a0 -a1 -a2 -a3 -a4 -a5 -a6 -a7;];
+    
+expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
+
+a3 = 5;
+a2 = 35/4;
+a1 = 25/4;
+a0 = 3/2;
+
+A_eq = [0 1 0 0 0 0 0 0;
+        0 0 1 0 0 0 0 0;
+        0 0 0 1 0 0 0 0;
+        -a0 -a1 -a2 -a3 0 0 0 0;
+        0 0 0 0 0 1 0 0;
+        0 0 0 0 0 0 1 0;
+        0 0 0 0 0 0 0 1;
+        0 0 0 0 -a0 -a1 -a2 -a3];
 
 % A_eq = A_new + B_new * K_new
 %syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
-%K_new = [k11 k12 k13 k14 k15 k16;
+%K = [k11 k12 k13 k14 k15 k16;
 %         k21 k22 k23 k24 k25 k26];
      
 %BK = [0 0 0 0 0 0;
@@ -111,7 +129,7 @@ A_eq = [0 1 0 0 0 0 0 0;
 %      0 0 0 0 0 0;
 %      k21 k22 k23 k24 k25 k26]
 
-BK_co = A_eq - A_co;
+BK_co = A_co - A_eq;
 
 k11 = BK_co(4, 1);
 k12 = BK_co(4, 2);
@@ -136,29 +154,35 @@ K_co = [k11 k12 k13 k14 k15 k16 k17 k18;
      
 K = K_co*T
 
+%p = [-.5 -.5 -1 -1 -1.5 -1.5 -2 -2];
+p = [-.5 -1 -1.5 -2 -.5 -1 -1.5 -2];
+%K_matlab = place(A, B, p)
+
 BK = B*K
 
+
+% calculate L
 %A_eq_obs = A_obs - L*C_obs
 
-pole_1 = -10;
-pole_2 = -10;
-pole_3 = -10;
-pole_4 = -10;
-pole_5 = -10;
-pole_6 = -10;
-pole_7 = -10;
-pole_8 = -10;
+pole_1 = -1.5;
+pole_2 = -1.5;
+pole_3 = -3;
+pole_4 = -3;
+pole_5 = -4.5;
+pole_6 = -4.5;
+pole_7 = -6;
+pole_8 = -6;
 
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
 
-a7_obs = 80;
-a6_obs = 2800;
-a5_obs = 56000;
-a4_obs = 700000;
-a3_obs = 5600000;
-a2_obs = 28000000;
-a1_obs = 80000000;
-a0_obs = 100000000;
+a7_obs = 30;
+a6_obs = 765/2;
+a5_obs = 2700;
+a4_obs = 184113/16;
+a3_obs = 241785/8;
+a2_obs = 761805/16;
+a1_obs = 164025/4;
+a0_obs = 59049/4;
 
 A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
             1 0 0 0 0 0 0 -a1_obs;
@@ -168,25 +192,33 @@ A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
             0 0 0 0 1 0 0 -a5_obs;
             0 0 0 0 0 1 0 -a6_obs;
             0 0 0 0 0 0 1 -a7_obs];
+        
+expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
 
-%A_eq_obs = [-a7_obs 0 0 0 0 0 0 0;
-%            -a6_obs 1 0 0 0 0 0 0;
-%            -a5_obs 0 1 0 0 0 0 0;
-%            -a4_obs 0 0 1 0 0 0 0;
-%            -a3_obs 0 0 0 1 0 0 0;
-%            -a2_obs 0 0 0 0 1 0 0;
-%            -a1_obs 0 0 0 0 0 1 0;
-%            -a0_obs 0 0 0 0 0 0 1]
+a3_obs = 15;
+a2_obs = 315/4;
+a1_obs = 675/4;
+a0_obs = 243/2;
+
+A_eq_obs = [0 0 0 -a0_obs 0 0 0 0;
+            1 0 0 -a1_obs 0 0 0 0;
+            0 1 0 -a2_obs 0 0 0 0;
+            0 0 1 -a3_obs 0 0 0 0;
+            0 0 0 0 0 0 0 -a0_obs;
+            0 0 0 0 1 0 0 -a1_obs;
+            0 0 0 0 0 1 0 -a2_obs;
+            0 0 0 0 0 0 1 -a3_obs];
 
 LC_obs = A_obs - A_eq_obs;
 L1 = LC_obs(:,4);
 L2 = LC_obs(:,8);
 
-L_obs = horzcat(L1, L2);
+L_obs = horzcat(L1, L2)
 
-L = T_ob_inv*L_obs;
-L1 = L(:,1)
-L2 = L(:,2)
+L = T_ob*L_obs
+
+pl = [-1.5 -1.5 -3 -3 -4.5 -4.5 -6 -6];
+%L_matlab = place(A', C', pl).'
 
 LC = L*C
 
