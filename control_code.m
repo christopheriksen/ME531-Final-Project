@@ -193,14 +193,14 @@ LC = L*C
 
 % controller-observer
 %A_eq = A + BK - LC
-LC_obs = A_obs + T_ob_inv*B*K*T_ob - A_eq_obs
-L1 = LC_obs(:,4);
-L2 = LC_obs(:,8);
+%LC_obs = A_obs + T_ob_inv*B*K*T_ob - A_eq_obs
+%L1 = LC_obs(:,4);
+%L2 = LC_obs(:,8);
 
-L_obs = horzcat(L1, L2);
+%L_obs = horzcat(L1, L2);
 
-L = T_ob_inv*L_obs;
-L1 = L(:,1)
-L2 = L(:,2)
+%L = T_ob_inv*L_obs;
+%L1 = L(:,1)
+%L2 = L(:,2)
 
-LC = L*C
+%LC = L*C
