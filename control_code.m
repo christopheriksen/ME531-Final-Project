@@ -153,4 +153,17 @@ A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
             0 0 0 0 0 1 0 -a6_obs;
             0 0 0 0 0 0 1 -a7_obs;]
 
+%A_eq_obs = [-a7_obs 0 0 0 0 0 0 0;
+%            -a6_obs 1 0 0 0 0 0 0;
+%            -a5_obs 0 1 0 0 0 0 0;
+%            -a4_obs 0 0 1 0 0 0 0;
+%            -a3_obs 0 0 0 1 0 0 0;
+%            -a2_obs 0 0 0 0 1 0 0;
+%            -a1_obs 0 0 0 0 0 1 0;
+%            -a0_obs 0 0 0 0 0 0 1]
+
 LC = A_obs - A_eq_obs
+L1 = LC(:,4)
+L2 = LC(:,8)
+
+L_ca = horzcat(L1, L2);

@@ -30,13 +30,24 @@ C = [0 0 0 0 1 0 1 0];
 % determine if system is observable
 Q = vertcat(C, C*A, C*(A^2), C*(A^3), C*(A^4), C*(A^5), C*(A^6), C*(A^7))
 
-Q(1,:)
-Q(2,:)
-Q(3,:)
-Q(4,:)
-Q(5,:)
-Q(6,:)
-Q(7,:)
-Q(8,:)
+%Q(1,:)
+%Q(2,:)
+%Q(3,:)
+%Q(4,:)
+%Q(5,:)
+%Q(6,:)
+%Q(7,:)
+%Q(8,:)
 
 rank(Q)
+
+Q_inv = inv(Q);
+q = Q_inv(:,1);
+M_inv = horzcat(q, A*q, (A^2)*q, (A^3)*q, (A^4)*q, (A^5)*q, (A^6)*q, (A^7)*q);
+M = inv(M_inv);
+
+A_obs = M*A*M_inv
+
+B_obs = M*B
+
+C_obs = C*M_inv
