@@ -1,24 +1,21 @@
 clc
 clear
-k = 500;  % spring coefficient
-m_t = 150.0; % mass of thruster
+k = 300;  % spring coefficient
+m_t = 50.0; % mass of thruster
 m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
-d = 1.0;  % diameter of pod
-dt = 0.25;
-Ip = m_p*((d/2)^2)/2;  % inertia of pod
-It = m_t*((dt/2)^2)/2;
-r = sqrt((d/2)^2+(d -(2*m_t*(d)/(2*m_t+m_p)))^2);
-I = 2*(It + m_t*r^2) + Ip + m_p*(2*m_t*(d)/(2*m_t+m_p))^2;
+d = .5;  % diameter of pod
+I = m_p*((d/2)^2)/2;  % inertia of pod
 
 A = [0 1 0 0 0 0 0 0;
-     -k/m_t -c/m_t 0 0 k/m_t c/m_t 0 0;
+     -k/m_t -c/m_t 0 0 k/m_t c/m_t -d*k/(2*m_t) -d*c/(2*m_t);
     0 0 0 1 0 0 0 0;
-    0 0 -k/m_t -c/m_t k/m_t c/m_t 0 0;
+    0 0 -k/m_t -c/m_t k/m_t c/m_t d*k/(2*m_t) d*c/(2*m_t);
     0 0 0 0 0 1 0 0;
     k/m_p c/m_p k/m_p c/m_p -2*k/m_p -2*c/m_p 0 0;
     0 0 0 0 0 0 0 1;
-    0 0 0 0 0 0 0 0];
+    -d*k/(2*I) -d*c/(2*I) d*k/(2*I) d*c/(2*I) 0 0 -(d^2)*k/(2*I) -(d^2)*c/(2*I)];
+
 
 %B = [0 0;
 %    1/m_t -1/(2*m_t);
@@ -30,23 +27,23 @@ A = [0 1 0 0 0 0 0 0;
 %    0 0];
 
 B = [0 0;
-    1/m_t 0;
+    1 0;
     0 0;
-    0 1/m_t;
+    0 1;
     0 0;
     0 0;
     0 0;
-    -1/I 1/I];
+    0 0];
 
 C = [0 0 0 0 1 0 0 0;
      0 0 0 0 0 0 1 0];
 
 % determine if system is controllable and observable
-P = horzcat(B, A*B, (A^2)*B, (A^3)*B);
-rank(P)
+P = horzcat(B, A*B, (A^2)*B, (A^3)*B)
+rank(P);
 
 Q = vertcat(C, C*A, C*(A^2), C*(A^3));
-rank(Q)
+rank(Q);
 
 % transform to controllable canonical form
 M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)), (A^3)*(B(:, 2)));
@@ -85,12 +82,12 @@ transpose(B_co);
 % calculate K
 syms s
 
-pole_1 = -.5;
-pole_2 = -.5;
-pole_3 = -1;
-pole_4 = -1;
-pole_5 = -1.5;
-pole_6 = -1.5;
+pole_1 = -2;
+pole_2 = -2;
+pole_3 = -2;
+pole_4 = -2;
+pole_5 = -2;
+pole_6 = -2;
 pole_7 = -2;
 pole_8 = -2;
 
@@ -177,75 +174,75 @@ BK_matlab = B*K_matlab
 % calculate L
 %A_eq_obs = A_obs - L*C_obs
 
-pole_1 = -1.5;
-pole_2 = -1.5;
-pole_3 = -3;
-pole_4 = -3;
-pole_5 = -4.5;
-pole_6 = -4.5;
-pole_7 = -6;
-pole_8 = -6;
-
-expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
-
-a7_obs = 30;
-a6_obs = 765/2;
-a5_obs = 2700;
-a4_obs = 184113/16;
-a3_obs = 241785/8;
-a2_obs = 761805/16;
-a1_obs = 164025/4;
-a0_obs = 59049/4;
-
-A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
-            1 0 0 0 0 0 0 -a1_obs;
-            0 1 0 0 0 0 0 -a2_obs;
-            0 0 1 0 0 0 0 -a3_obs;
-            0 0 0 1 0 0 0 -a4_obs;
-            0 0 0 0 1 0 0 -a5_obs;
-            0 0 0 0 0 1 0 -a6_obs;
-            0 0 0 0 0 0 1 -a7_obs];
-        
-expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
-
-a3_obs = 15;
-a2_obs = 315/4;
-a1_obs = 675/4;
-a0_obs = 243/2;
-
-A_eq_obs = [0 0 0 -a0_obs 0 0 0 0;
-            1 0 0 -a1_obs 0 0 0 0;
-            0 1 0 -a2_obs 0 0 0 0;
-            0 0 1 -a3_obs 0 0 0 0;
-            0 0 0 0 0 0 0 -a0_obs;
-            0 0 0 0 1 0 0 -a1_obs;
-            0 0 0 0 0 1 0 -a2_obs;
-            0 0 0 0 0 0 1 -a3_obs];
-
-LC_obs = A_obs - A_eq_obs;
-L1 = LC_obs(:,4);
-L2 = LC_obs(:,8);
-
-L_obs = horzcat(L1, L2);
-
-L = T_ob*L_obs
-
-pl = [-1.5 -1.5 -3 -3 -4.5 -4.5 -6 -6];
-%L_matlab = place(A', C', pl).'
-
-LC = L*C
-
-
-% controller-observer
-%A_eq = A + BK - LC
-%LC_obs = A_obs + T_ob_inv*B*K*T_ob - A_eq_obs
-%L1 = LC_obs(:,4);
-%L2 = LC_obs(:,8);
-
-%L_obs = horzcat(L1, L2);
-
-%L = T_ob_inv*L_obs;
-%L1 = L(:,1)
-%L2 = L(:,2)
-
-%LC = L*C
+% pole_1 = -2;
+% pole_2 = -2;
+% pole_3 = -2;
+% pole_4 = -2;
+% pole_5 = -2;
+% pole_6 = -2;
+% pole_7 = -2;
+% pole_8 = -2;
+% 
+% expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
+% 
+% a7_obs = 30;
+% a6_obs = 765/2;
+% a5_obs = 2700;
+% a4_obs = 184113/16;
+% a3_obs = 241785/8;
+% a2_obs = 761805/16;
+% a1_obs = 164025/4;
+% a0_obs = 59049/4;
+% 
+% A_eq_obs = [0 0 0 0 0 0 0 -a0_obs;
+%             1 0 0 0 0 0 0 -a1_obs;
+%             0 1 0 0 0 0 0 -a2_obs;
+%             0 0 1 0 0 0 0 -a3_obs;
+%             0 0 0 1 0 0 0 -a4_obs;
+%             0 0 0 0 1 0 0 -a5_obs;
+%             0 0 0 0 0 1 0 -a6_obs;
+%             0 0 0 0 0 0 1 -a7_obs];
+%         
+% expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
+% 
+% a3_obs = 15;
+% a2_obs = 315/4;
+% a1_obs = 675/4;
+% a0_obs = 243/2;
+% 
+% A_eq_obs = [0 0 0 -a0_obs 0 0 0 0;
+%             1 0 0 -a1_obs 0 0 0 0;
+%             0 1 0 -a2_obs 0 0 0 0;
+%             0 0 1 -a3_obs 0 0 0 0;
+%             0 0 0 0 0 0 0 -a0_obs;
+%             0 0 0 0 1 0 0 -a1_obs;
+%             0 0 0 0 0 1 0 -a2_obs;
+%             0 0 0 0 0 0 1 -a3_obs];
+% 
+% LC_obs = A_obs - A_eq_obs;
+% L1 = LC_obs(:,4);
+% L2 = LC_obs(:,8);
+% 
+% L_obs = horzcat(L1, L2);
+% 
+% L = T_ob*L_obs
+% 
+% pl = [-1.5 -1.5 -3 -3 -4.5 -4.5 -6 -6];
+% %L_matlab = place(A', C', pl).'
+% 
+% LC = L*C
+% 
+% 
+% % controller-observer
+% %A_eq = A + BK - LC
+% %LC_obs = A_obs + T_ob_inv*B*K*T_ob - A_eq_obs
+% %L1 = LC_obs(:,4);
+% %L2 = LC_obs(:,8);
+% 
+% %L_obs = horzcat(L1, L2);
+% 
+% %L = T_ob_inv*L_obs;
+% %L1 = L(:,1)
+% %L2 = L(:,2)
+% 
+% %LC = L*C
