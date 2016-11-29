@@ -4,17 +4,16 @@ k = 500;  % spring coefficient
 m_t = 50.0; % mass of thruster
 m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
-d = .5;  % diameter of pod
-I = m_p*((d/2)^2)/2;  % inertia of pod
+r = .25;  % radius of pod
+I = m_p*((r)^2)/2;  % inertia of pod
 
 A = [0 0 0 1 0 0 0;
      0 0 0 0 1 0 0;
      0 0 0 0 0 1 0;
-     ((-k/m_t)-(k/m_p)) -k/m_p -(k*d)/(2*m_t) ((-c/m_t) -(c/m_p)) -c/m_p -(c*d)/(2*m_t) 0;
-     -k/m_p ((-k/m_t)-(k/m_p)) (k*d)/(2*m_t) -c/m_p ((-c/m_t) -(c/m_p)) (c*d)/(2*m_t) 0;
-     -(d*k)/(2*I) (d*k)/(2*I) -((d^2)*k)/(2*I) -(d*c)/(2*I) (d*c)/(2*I) -((d^2)*c)/(2*I) 0;
+     -k/m_t 0 0 -c/m_t 0 0 0;
+     0 -k/m_t 0 0 -c/m_t 0 0;
+     -k*r/I k*r/I 0 -c*r/I c*r/I 0 0;
      k/m_p k/m_p 0 c/m_p c/m_p 0 0];
-
 
 B = [0 0;
      0 0;
@@ -154,7 +153,7 @@ K_co = [k11 k12 k13 k14 k15 k16 k17;
 K = K_co*T
 
 
-p = [-.5 -1 -1.5 -2 -.5 -1 -1.5];
+p = [-.5 -1 -1.5 -2 -1 -1.5 -2];
 K_matlab = place(A, B, p)
 
 BK = B*K
