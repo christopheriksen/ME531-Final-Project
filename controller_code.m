@@ -6,15 +6,14 @@ m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
 r = .25;  % radius of pod
 I = m_p*((r)^2)/2;  % inertia of pod
-% State [z1 z2 t z1d z2d td z3d]
 
-A = [0              0              0            1              0              0           0;
-     0              0              0            0              1              0           0;
-     0              0              0            0              0              1           0;
-    -(k/m_p+k/m_t) -k/m_p         -r*k/m_t     -(c/m_p+c/m_t) -c/m_p         -r*c/m_t     0;
-    -k/m_p         -(k/m_p+k/m_t)  r*k/m_t     -c/m_p         -(c/m_t+c/m_p)  r*c/m_t     0;
-    -k*r/I          k*r/I         -2*(r^2)*k/I -c*r/I          c*r/I         -2*(r^2)*c/I 0;
-     k/m_p          k/m_p          0            c/m_p          c/m_p          0           0];
+A = [0 0 0 1 0 0 0;
+     0 0 0 0 1 0 0;
+     0 0 0 0 0 1 0;
+     (-k/m_t-k/m_p) -k/m_p -r*k/m_t (-c/m_t-c/m_p) -c/m_p -c*r/m_t 0;
+     -k/m_p (-k/m_t-k/m_p) r*k/m_t -c/m_p (-c/m_t-c/m_p) c*r/m_t 0;
+     -k*r/I k*r/I -2*(r^2)*k/I -c*r/I c*r/I -2*(r^2)*c/I 0;
+     k/m_p k/m_p 0 c/m_p c/m_p 0 0];
 
 B = [0 0;
      0 0;
@@ -30,10 +29,10 @@ C = [0 0 1 0 0 0 0;
 
 % determine if system is controllable and observable
 P = horzcat(B, A*B, (A^2)*B, (A^3)*B(:,1));
-rank(P)
+rank(P);
 
 Q = vertcat(C, C*A, C*(A^2), C(1,:)*(A^3));
-rank(Q)
+rank(Q);
 
 % transform to controllable canonical form
 M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)));
@@ -49,47 +48,46 @@ A_co = T*A*T_inv
 B_co = T*B
 C_co = C*T_inv
 
-
 % calculate K
 syms s
 
-pole_1 = -1;
-pole_2 = -2;
-pole_3 = -3;
-pole_4 = -4;
+pole_1 = -.5;
+pole_2 = -1;
+pole_3 = -1.5;
+pole_4 = -2;
 pole_5 = -1;
-pole_6 = -2;
-pole_7 = -3;
+pole_6 = -1.5;
+pole_7 = -2;
 
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7))
 
-a6 = 16;
-a5 = 106;
-a4 = 376;
-a3 = 769;
-a2 = 904;
-a1 = 564;
-a0 = 144;
+a6 = 19/2;
+a5 = 151/4;
+a4 = 649/8;
+a3 = 203/2;
+a2 = 589/8;
+a1 = 57/2;
+a0 = 9/2;
 
-A_eq = [0 1 0 0 0 0 0;
-        0 0 1 0 0 0 0;
-        0 0 0 1 0 0 0;
-        0 0 0 0 1 0 0;
-        0 0 0 0 0 1 0;
-        0 0 0 0 0 0 1;
-        -a0 -a1 -a2 -a3 -a4 -a5 -a6;];
+% A_eq = [0 1 0 0 0 0 0;
+%         0 0 1 0 0 0 0;
+%         0 0 0 1 0 0 0;
+%         0 0 0 0 1 0 0;
+%         0 0 0 0 0 1 0;
+%         0 0 0 0 0 0 1;
+%         -a0 -a1 -a2 -a3 -a4 -a5 -a6;];
     
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4))
 expand ((s - pole_5)*(s - pole_6)*(s - pole_7))
 
-a3 = 10;
-a2 = 35;
-a1 = 50;
-a0 = 24;
+a3 = 5;
+a2 = 35/4;
+a1 = 25/4;
+a0 = 3/2;
 
-a6 = 6;
-a5 = 11;
-a4 = 6;
+a6 = 9/2;
+a5 = 13/2;
+a4 = 3;
 
 A_eq = [0 1 0 0 0 0 0;
         0 0 1 0 0 0 0;
@@ -99,27 +97,15 @@ A_eq = [0 1 0 0 0 0 0;
         0 0 0 0 0 0 1;
         0 0 0 0 -a4 -a5 -a6];
 
-% A_eq = A_new + B_new * K_new
-%syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
-%K = [k11 k12 k13 k14 k15 k16;
-%         k21 k22 k23 k24 k25 k26];
-     
-%BK = [0 0 0 0 0 0;
-%      0 0 0 0 0 0;
-%      k11 k12 k13 k14 k15 k16;
-%      0 0 0 0 0 0;
-%      0 0 0 0 0 0;
-%      k21 k22 k23 k24 k25 k26]
+BK_co = A_co - A_eq
 
-BK_co = A_co - A_eq;
-
-k11 = BK_co(4, 1);
-k12 = BK_co(4, 2);
-k13 = BK_co(4, 3);
-k14 = BK_co(4, 4);
-k15 = BK_co(4, 5);
-k16 = BK_co(4, 6);
-k17 = BK_co(4, 7);
+k11 = BK_co(4, 1) + BK_co(end, 1);
+k12 = BK_co(4, 2) + BK_co(end, 2);
+k13 = BK_co(4, 3) + BK_co(end, 3);
+k14 = BK_co(4, 4) + BK_co(end, 4);
+k15 = BK_co(4, 5) + BK_co(end, 5);
+k16 = BK_co(4, 6) + BK_co(end, 6);
+k17 = BK_co(4, 7) + BK_co(end, 7);
 
 k21 = BK_co(end, 1);
 k22 = BK_co(end, 2);
@@ -135,11 +121,14 @@ K_co = [k11 k12 k13 k14 k15 k16 k17;
 K = K_co*T
 
 
-p = [-1 -1 -2 -2 -3 -3 -4];
+p = [pole_1 pole_2 pole_3 pole_4 pole_5 pole_6 pole_7];
 K_matlab = place(A, B, p)
+
+K_matlab_co = place(A_co, B_co, p)*T
 
 BK = B*K
 BK_matlab = B*K_matlab
+
 
 % % Observer
 % 
