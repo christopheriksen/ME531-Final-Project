@@ -1,0 +1,2 @@
+ffmpeg -r 60 -f image2 -s 891x659 -i fr%8d.png -vcodec libx264 -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -crf 25  -pix_fmt yuv420p test.mp4
+

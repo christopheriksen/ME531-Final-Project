@@ -15,7 +15,7 @@ function animation_demonstration(export,skip)
 		
 		if nargin < 1
 			
-			export = [0 0];
+			export = [1 1];
 			
 		end
 		

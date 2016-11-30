@@ -34,8 +34,8 @@ function animation_demonstration(export,skip)
 		= @animation_demo_draw_cosine; % frame function, defined below in file
 
 	% Declare timing
-	timing.duration = 30; % three second animation
-	timing.fps = 30;     % create frames for 15 fps animation
+	timing.duration = 5; % three second animation
+	timing.fps = 15;     % create frames for 15 fps animation
 	timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
 
 	% Declare a directory name in which to place files
@@ -81,8 +81,8 @@ function h = animation_demo_create_elements
 												 %  settings during printing
 
 	h.ax = axes('Parent',h.f);                   % Create axes for the plot
-	set(h.ax,'Xlim',[0 2*pi],'Ylim',[-1 1]*1.1);   % Set the range of the plot
-	set(h.ax,'Xtick',0:1:6,'YTick',[-1 0 1]*.5);   % Set the tick locations
+	set(h.ax,'Xlim',[0 10],'Ylim',[0 10]);   % Set the range of the plot
+	set(h.ax,'Xtick',0:1:10,'YTick',0:1:10);   % Set the tick locations
 	set(h.ax,'FontSize',20);                       % Set the axis font size
 	xlabel(h.ax, 'x')							 % Label the axes
 	ylabel(h.ax, 'y')
@@ -90,8 +90,17 @@ function h = animation_demo_create_elements
 
 
 	% Line element to be used to draw the cosine function
+    %Line 1 Definition
 	h.line = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
+    %Line 2 Definition
     h.line_2 = line(0,0,'Color',[0 0 235]/255,'linewidth',5,'Parent',h.ax);
+    %Line 3 Definition
+    h.line_3 = line(0,0,'Color',[0 0 235]/255,'linewidth',5,'Parent',h.ax);
+    %Line 4 Definition
+    h.line_4 = line(0,0,'Color',[0 0 235]/255,'linewidth',5,'Parent',h.ax);
+    %Line 5 Definition
+    h.line_5 = line(0,0,'Color',[0 0 235]/255,'linewidth',5,'Parent',h.ax);
+
 end
 
 
@@ -102,26 +111,32 @@ function frame_info = animation_demo_draw_cosine(frame_info,tau)
 
 	% Declare a baseline set of points at which to evaluate the cosine
 	% function
-	x_full = linspace(0,2*pi,300)';
+	x_full = linspace(0,10,300)';
 	
 	% Truncate the points to the percentage of the way through drawing
 	x = x_full(1:round(tau*length(x_full)),:);
 
 	% Evaluate the cosine function at the x points;
-	y = cos(x);
+	y = sin(x)+5;
 	z = sin(x)
-    
     %Combining array testing for ODE45 output
-    s = [y,z]
+%     s = [y,z]
     
 	% Set the line in the plot to the calculated x and y points
-% 	set(frame_info.line,'XData',x,'YData',y)
-% 	set(frame_info.line_2,'XData',x,'YData',z)
-	
+	%Plot 1
+    set(frame_info.line,'XData',x,'YData',y);
+	%Plot 2
+%     set(frame_info.line_2,'XData',x,'YData',z);
+    if ~isempty(x)
+        square = get_square(x(end),y(end),0);
+        set(frame_info.line_2,'XData',square(:,1),'YData',square(:,2))
+	    set(frame_info.line_3,'XData',square(:,3),'YData',square(:,4))
+        set(frame_info.line_4,'XData',square(:,5),'YData',square(:,6))
+        set(frame_info.line_5,'XData',square(:,7),'YData',square(:,8))
     %Set the line in the plot to the two columns in s, this can be chaged
     %depending on input form.
-	set(frame_info.line,'XData',x,'YData',s(:,1))
-	set(frame_info.line_2,'XData',x,'YData',s(:,2))
+% 	set(frame_info.line,'XData',x,'YData',s(:,1))
+% 	set(frame_info.line_2,'XData',x,'YData',s(:,2))
 
 	% Declare a print method (in this case, print 150dpi png files of
 	% frame_info.f, using the Painters renderer)
@@ -130,6 +145,49 @@ function frame_info = animation_demo_draw_cosine(frame_info,tau)
 
 end
 
+
+% Function to produce an ellipse at the point where the vehicle is
+% Size of the ellipse is predefined based upon how big the vehicle is
+
+function [ellipse] = get_ellipse(centerX, centerY, orientation)
+    
+    xAxis = .75;
+    yAxis = .11;
+    
+    theta = linspace(0, 2*pi, 150);
+    
+    xx = (xAxis) * sin(theta) + centerX;
+    yy = (yAxis) * cos(theta) + centerY;
+    
+    xx2 = (xx-centerX)*cos(orientation) - (yy-centerY)*sin(orientation) + centerX;
+    yy2 = (xx-centerX)*sin(orientation) + (yy-centerY)*cos(orientation) + centerY;
+    
+    ellipse = [xx2',yy2'];
+    
+end
+
+function [square] = get_square(centerX, centerY, orientation)
+    %        x3,x4
+    %        -----   
+    %  y1,y2 - c - y3,y4
+    %        -----  
+    %        x1,x2 
+    xsize = .5;
+    ysize = .5;
+    
+    line = linspace(0, .5, 10);
+    
+    x1 = (1)* (line) + centerX -.25
+    x2 = (0)* (line) + centerY 
+    y1 = (0)* (line) + centerX 
+    y2 = (1)* (line) + centerY 
+    x3 = (1)* (line) + centerX -.25
+    x4 = (0)* (line) + centerY +.5 
+    y3 = (0)* (line) + centerX +.5 -.75
+    y4 = (1)* (line) + centerY 
+    square = [x1',x2',y1',y2',x3',x4',y3',y4'];
+    
+end
 %%%%%%%%%%%%%%%%
 % Frame content specification for zooming in on the first quadrant of the
 % plot, at time tau on a range of 0 to 1, demonstrating the simplified
@@ -150,4 +208,4 @@ end
 % 	% frame_info.f, using the Painters renderer)
 % 	frame_info.printmethod = @(dest) print(frame_info.f,'-dpng','-r 150','-painters',dest);
 % 
-% end
+end

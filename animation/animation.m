@@ -160,7 +160,7 @@ function [frame_info, endframe] = animation(frame_gen_function,frame_info,timing
 				if export(j)
 				
 					destination_str = fullfile(destination{j},'newframes',frame_str);
-					frame_info{j}.printmethod(destination_str);
+					frame_info(j).printmethod(destination_str);
 					
 				end
 			end
