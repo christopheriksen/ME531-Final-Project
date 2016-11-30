@@ -10,9 +10,9 @@ I = m_p*((r)^2)/2;  % inertia of pod
 A = [0 0 0 1 0 0 0;
      0 0 0 0 1 0 0;
      0 0 0 0 0 1 0;
-     -k/m_t 0 0 -c/m_t 0 0 0;
-     0 -k/m_t 0 0 -c/m_t 0 0;
-     -k*r/I k*r/I 0 -c*r/I c*r/I 0 0;
+     -k/m_t 0 -r*k/m_t -c/m_t 0 -c*r/m_t 0;
+     0 -k/m_t 0 r*k/m_t -c/m_t c*r/m_t 0;
+     -k*r/I k*r/I -2*(r^2)*k/I -c*r/I c*r/I -2*(r^2)*c/I 0;
      k/m_p k/m_p 0 c/m_p c/m_p 0 0];
 
 B = [0 0;
@@ -75,27 +75,27 @@ pole_1 = -.5;
 pole_2 = -1;
 pole_3 = -1.5;
 pole_4 = -2;
-pole_5 = -.5;
-pole_6 = -1;
-pole_7 = -1.5;
+pole_5 = -1;
+pole_6 = -1.5;
+pole_7 = -2;
 
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7))
 
-a6 = 8;
-a5 = 53/2;
-a4 = 47;
-a3 = 769/16;
-a2 = 113/4;
-a1 = 141/16;
-a0 = 9/8;
+a6 = 19/2;
+a5 = 151/4;
+a4 = 649/8;
+a3 = 203/2;
+a2 = 589/8;
+a1 = 57/2;
+a0 = 9/2;
 
-A_eq = [0 1 0 0 0 0 0;
-        0 0 1 0 0 0 0;
-        0 0 0 1 0 0 0;
-        0 0 0 0 1 0 0;
-        0 0 0 0 0 1 0;
-        0 0 0 0 0 0 1;
-        -a0 -a1 -a2 -a3 -a4 -a5 -a6;];
+% A_eq = [0 1 0 0 0 0 0;
+%         0 0 1 0 0 0 0;
+%         0 0 0 1 0 0 0;
+%         0 0 0 0 1 0 0;
+%         0 0 0 0 0 1 0;
+%         0 0 0 0 0 0 1;
+%         -a0 -a1 -a2 -a3 -a4 -a5 -a6;];
     
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4))
 expand ((s - pole_5)*(s - pole_6)*(s - pole_7))
@@ -105,9 +105,9 @@ a2 = 35/4;
 a1 = 25/4;
 a0 = 3/2;
 
-a6 = 3;
-a5 = 11/4;
-a4 = 3/4;
+a6 = 9/2;
+a5 = 13/2;
+a4 = 3;
 
 A_eq = [0 1 0 0 0 0 0;
         0 0 1 0 0 0 0;
@@ -117,27 +117,15 @@ A_eq = [0 1 0 0 0 0 0;
         0 0 0 0 0 0 1;
         0 0 0 0 -a4 -a5 -a6];
 
-% A_eq = A_new + B_new * K_new
-%syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
-%K = [k11 k12 k13 k14 k15 k16;
-%         k21 k22 k23 k24 k25 k26];
-     
-%BK = [0 0 0 0 0 0;
-%      0 0 0 0 0 0;
-%      k11 k12 k13 k14 k15 k16;
-%      0 0 0 0 0 0;
-%      0 0 0 0 0 0;
-%      k21 k22 k23 k24 k25 k26]
+BK_co = A_co - A_eq
 
-BK_co = A_co - A_eq;
-
-k11 = BK_co(4, 1);
-k12 = BK_co(4, 2);
-k13 = BK_co(4, 3);
-k14 = BK_co(4, 4);
-k15 = BK_co(4, 5);
-k16 = BK_co(4, 6);
-k17 = BK_co(4, 7);
+k11 = BK_co(4, 1) + BK_co(end, 1);
+k12 = BK_co(4, 2) + BK_co(end, 2);
+k13 = BK_co(4, 3) + BK_co(end, 3);
+k14 = BK_co(4, 4) + BK_co(end, 4);
+k15 = BK_co(4, 5) + BK_co(end, 5);
+k16 = BK_co(4, 6) + BK_co(end, 6);
+k17 = BK_co(4, 7) + BK_co(end, 7);
 
 k21 = BK_co(end, 1);
 k22 = BK_co(end, 2);
