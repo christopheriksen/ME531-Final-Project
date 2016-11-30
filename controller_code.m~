@@ -1,58 +1,48 @@
 clc
 clear
-k = 300;  % spring coefficient
+k = 500;  % spring coefficient
 m_t = 50.0; % mass of thruster
 m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
-d = .5;  % diameter of pod
-I = m_p*((d/2)^2)/2;  % inertia of pod
+r = .25;  % radius of pod
+I = m_p*((r)^2)/2;  % inertia of pod
+% State [z1 z2 t z1d z2d td z3d]
 
-A = [0 1 0 0 0 0 0 0;
-     -k/m_t -c/m_t 0 0 k/m_t c/m_t -d*k/(2*m_t) -d*c/(2*m_t);
-    0 0 0 1 0 0 0 0;
-    0 0 -k/m_t -c/m_t k/m_t c/m_t d*k/(2*m_t) d*c/(2*m_t);
-    0 0 0 0 0 1 0 0;
-    k/m_p c/m_p k/m_p c/m_p -2*k/m_p -2*c/m_p 0 0;
-    0 0 0 0 0 0 0 1;
-    -d*k/(2*I) -d*c/(2*I) d*k/(2*I) d*c/(2*I) 0 0 -(d^2)*k/(2*I) -(d^2)*c/(2*I)];
-
-
-%B = [0 0;
-%    1/m_t -1/(2*m_t);
-%    0 0;
-%    1/m_t 1/(2*m_t);
-%    0 0;
-%    0 0;
-%    0 0;
-%    0 0];
+A = [0              0          0            1              0          0           0;
+     0              0          0            0              1          0           0;
+     0              0          0            0              0          1           0;
+    -(k/m_p+k/m_t) -k/m_p     -r*k/m_t     -(c/m_p+c/m_t) -c/m_p     -r*c/m_t     0;
+     0    -(k/m_p+k/m_t)  r*k/m_t      0    -c/m_t  r*c/m_t     0;
+    -k*r/I k*r/I -2*(r^2)*k/I -c*r/I c*r/I -2*(r^2)*c/I 0;
+     k/m_p k/m_p  0            c/m_p c/m_p  0           0];
 
 B = [0 0;
-    1 0;
-    0 0;
-    0 1;
-    0 0;
-    0 0;
-    0 0;
-    0 0];
+     0 0;
+     0 0;
+     1/m_t 0;
+     0 1/m_t;
+     0 0;
+     0 0];
+    
 
-C = [0 0 0 0 1 0 0 0;
-     0 0 0 0 0 0 1 0];
+C = [0 0 1 0 0 0 0;
+     0 0 0 0 0 0 1];
 
 % determine if system is controllable and observable
-P = horzcat(B, A*B, (A^2)*B, (A^3)*B)
-rank(P);
+P = horzcat(B, A*B, (A^2)*B, (A^3)*B(:,1));
+rank(P)
 
-Q = vertcat(C, C*A, C*(A^2), C*(A^3));
-rank(Q);
+Q = vertcat(C, C*A, C*(A^2), C(1,:)*(A^3));
+rank(Q)
 
 % transform to controllable canonical form
-M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)), (A^3)*(B(:, 2)));
+M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)));
 M_inv = inv(M);
 
 m1 = M_inv(4,:);
 m2 = M_inv(end,:);
 
-T = [m1; m1*A; m1*(A^2); m1*(A^3); m2; m2*A; m2*(A^2); m2*(A^3)];
+T = [m1; m1*A; m1*(A^2); m1*(A^3); m2; m2*A; m2*(A^2)];
 T_inv = inv(T);
 
 A_co = T*A*T_inv
@@ -60,72 +50,73 @@ B_co = T*B
 C_co = C*T_inv
 
 % transform to observable canonical form
-U = [C(1,:); C(1,:)*A; C(1,:)*(A^2); C(1,:)*(A^3); C(2,:); C(2,:)*A; C(2,:)*(A^2); C(2,:)*(A^3)];
+U = [C(1,:); C(1,:)*A; C(1,:)*(A^2); C(1,:)*(A^3); C(2,:); C(2,:)*A; C(2,:)*(A^2)];
 U_inv = inv(U);
 
 u1 = U_inv(:, 4);
-u2 = U_inv(:, 8);
+u2 = U_inv(:, end);
 
-T_ob = horzcat(u1, A*u1, (A^2)*u1, (A^3)*u1, u2, A*u2, (A^2)*u2, (A^3)*u2);
+T_ob = horzcat(u1, A*u1, (A^2)*u1, (A^3)*u1, u2, A*u2, (A^2)*u2);
 T_ob_inv = inv(T_ob);
 
-A_obs = T_ob_inv*A*T_ob
+A_obs = T_ob_inv*A*T_ob;
 transpose(A_co);
 
-B_obs = T_ob_inv*B
+B_obs = T_ob_inv*B;
 transpose(C_co);
 
-C_obs = C*T_ob
+C_obs = C*T_ob;
 transpose(B_co);
 
 
 % calculate K
 syms s
 
-pole_1 = -2;
-pole_2 = -2;
-pole_3 = -2;
+pole_1 = -.5;
+pole_2 = -1;
+pole_3 = -1.5;
 pole_4 = -2;
-pole_5 = -2;
-pole_6 = -2;
-pole_7 = -2;
-pole_8 = -2;
+pole_5 = -.5;
+pole_6 = -1;
+pole_7 = -1.5;
 
-expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
+expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7))
 
-a7 = 10;
-a6 = 85/2;
-a5 = 100;
-a4 = 2273/16;
-a3 = 995/8;
-a2 = 1045/16;
-a1 = 75/4;
-a0 = 9/4;
+a6 = 8;
+a5 = 53/2;
+a4 = 47;
+a3 = 769/16;
+a2 = 113/4;
+a1 = 141/16;
+a0 = 9/8;
 
-A_eq = [0 1 0 0 0 0 0 0;
-        0 0 1 0 0 0 0 0;
-        0 0 0 1 0 0 0 0;
-        0 0 0 0 1 0 0 0;
-        0 0 0 0 0 1 0 0;
-        0 0 0 0 0 0 1 0;
-        0 0 0 0 0 0 0 1;
-        -a0 -a1 -a2 -a3 -a4 -a5 -a6 -a7;];
+A_eq = [0 1 0 0 0 0 0;
+        0 0 1 0 0 0 0;
+        0 0 0 1 0 0 0;
+        0 0 0 0 1 0 0;
+        0 0 0 0 0 1 0;
+        0 0 0 0 0 0 1;
+        -a0 -a1 -a2 -a3 -a4 -a5 -a6;];
     
-expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
+expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4))
+expand ((s - pole_5)*(s - pole_6)*(s - pole_7))
 
 a3 = 5;
 a2 = 35/4;
 a1 = 25/4;
 a0 = 3/2;
 
-A_eq = [0 1 0 0 0 0 0 0;
-        0 0 1 0 0 0 0 0;
-        0 0 0 1 0 0 0 0;
-        -a0 -a1 -a2 -a3 0 0 0 0;
-        0 0 0 0 0 1 0 0;
-        0 0 0 0 0 0 1 0;
-        0 0 0 0 0 0 0 1;
-        0 0 0 0 -a0 -a1 -a2 -a3];
+a6 = 3;
+a5 = 11/4;
+a4 = 3/4;
+
+A_eq = [0 1 0 0 0 0 0;
+        0 0 1 0 0 0 0;
+        0 0 0 1 0 0 0;
+        -a0 -a1 -a2 -a3 0 0 0;
+        0 0 0 0 0 1 0;
+        0 0 0 0 0 0 1;
+        0 0 0 0 -a4 -a5 -a6];
 
 % A_eq = A_new + B_new * K_new
 %syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
@@ -148,24 +139,22 @@ k14 = BK_co(4, 4);
 k15 = BK_co(4, 5);
 k16 = BK_co(4, 6);
 k17 = BK_co(4, 7);
-k18 = BK_co(4, 8);
 
-k21 = BK_co(8, 1);
-k22 = BK_co(8, 2);
-k23 = BK_co(8, 3);
-k24 = BK_co(8, 4);
-k25 = BK_co(8, 5);
-k26 = BK_co(8, 6);
-k27 = BK_co(8, 7);
-k28 = BK_co(8, 8);
+k21 = BK_co(end, 1);
+k22 = BK_co(end, 2);
+k23 = BK_co(end, 3);
+k24 = BK_co(end, 4);
+k25 = BK_co(end, 5);
+k26 = BK_co(end, 6);
+k27 = BK_co(end, 7);
 
-K_co = [k11 k12 k13 k14 k15 k16 k17 k18;
-         k21 k22 k23 k24 k25 k26 k27 k28];
+K_co = [k11 k12 k13 k14 k15 k16 k17;
+         k21 k22 k23 k24 k25 k26 k27];
      
 K = K_co*T
 
-%p = [-.5 -.5 -1 -1 -1.5 -1.5 -2 -2];
-p = [-.5 -1 -1.5 -2 -.5 -1 -1.5 -2];
+
+p = [-.5 -1 -1.5 -2 -1 -1.5 -2];
 K_matlab = place(A, B, p)
 
 BK = B*K
