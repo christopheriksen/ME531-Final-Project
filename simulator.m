@@ -2,11 +2,12 @@ function simulator
 clc
 clear
 
-k = 300;  % spring coefficient
-m_t = 50.0; % mass of thruster
+k = 500;  % spring coefficient
+m_t = 150.0; % mass of thruster
 m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
 d = .5;  % diameter of pod
+r = .25;
 I = m_p*((d/2)^2)/2;  % inertia of pod
 
 BK =    [0         0         0         0         0         0         0         0;
@@ -18,9 +19,9 @@ BK =    [0         0         0         0         0         0         0         0
          0         0         0         0         0         0         0         0;
          0         0         0         0         0         0         0         0;];
 
-x0 = [0.0;1.0;0.0;1.0;0.0;1.0;0.0;0.0;];
+x0 = [0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0];
 t = [0.0:0.1:200];
-target = [0;0;0;0;0;1.0;0.0;0;];
+target = [0;0;0;0;0;1.0;pi/6;0;];
 opts = odeset('RelTol',1e-2,'AbsTol',1e-4);
 [t, y] = ode45(@(t,y) controller(t,y,target), t, x0, opts);
 plot(t, y(:,2),t, y(:,4),t, y(:,6),t, y(:,7))
@@ -57,25 +58,21 @@ function xdot = controller(t, x, target)
     end
     function F_1 = F1(x,target)
         x_err = target - x;
-        x_err(1) = 0.0;
-        x_err(2) = 0.0;
-        x_err(3) = 0.0;
-        x_err(4) = 0.0;
-        x_err(5) = 0.0;
-        %x_err(8) = 0.0;
-        x_err(6)
-        x_err(7)
+        x_err(1) = x(1) - (x(5)-r*sin(x(7)));
+        x_err(2) = x(2) - (x(6)-r*x(8)*cos(x(7)));
+        x_err(3) = x(3) - (x(5)+r*sin(x(7)));
+        x_err(4) = x(4) - (x(6)+r*x(8)*cos(x(7)));
+        x_err(5) = ((x(5) - x(1)) + (x(5) - x(3)))/2
         action = -BK*x_err
         F_1 = action(2);
     end
     function F_2 = F2(x, target)
         x_err = target - x;
-        x_err(1) = 0.0;
-        x_err(2) = 0.0;
-        x_err(3) = 0.0;
-        x_err(4) = 0.0;
-        x_err(5) = 0.0;
-        %x_err(8) = 0.0;
+        x_err(1) = x(1) - x(5);
+        x_err(2) = x(2) - x(6);
+        x_err(3) = x(3) - x(5);
+        x_err(4) = x(4) - x(6);
+        x_err(5) = ((x(5) - x(1)) + (x(5) - x(3)))/2;
         action = -BK*x_err;
         F_2 = action(4);
     end

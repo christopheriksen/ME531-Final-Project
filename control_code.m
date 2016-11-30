@@ -1,20 +1,30 @@
 clc
 clear
-k = 300;  % spring coefficient
-m_t = 50.0; % mass of thruster
+k = 500;  % spring coefficient
+m_t = 150.0; % mass of thruster
 m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
 d = .5;  % diameter of pod
+r = .25;
 I = m_p*((d/2)^2)/2;  % inertia of pod
 
-A = [0 1 0 0 0 0 0 0;
-     -k/m_t -c/m_t 0 0 k/m_t c/m_t -d*k/(2*m_t) -d*c/(2*m_t);
-    0 0 0 1 0 0 0 0;
-    0 0 -k/m_t -c/m_t k/m_t c/m_t d*k/(2*m_t) d*c/(2*m_t);
-    0 0 0 0 0 1 0 0;
-    k/m_p c/m_p k/m_p c/m_p -2*k/m_p -2*c/m_p 0 0;
-    0 0 0 0 0 0 0 1;
-    -d*k/(2*I) -d*c/(2*I) d*k/(2*I) d*c/(2*I) 0 0 -(d^2)*k/(2*I) -(d^2)*c/(2*I)];
+% A = [0 1 0 0 0 0 0 0;
+%      -k/m_t -c/m_t 0 0 k/m_t c/m_t -d*k/(2*m_t) -d*c/(2*m_t);
+%     0 0 0 1 0 0 0 0;
+%     0 0 -k/m_t -c/m_t k/m_t c/m_t d*k/(2*m_t) d*c/(2*m_t);
+%     0 0 0 0 0 1 0 0;
+%     k/m_p c/m_p k/m_p c/m_p -2*k/m_p -2*c/m_p 0 0;
+%     0 0 0 0 0 0 0 1;
+%     -d*k/(2*I) -d*c/(2*I) d*k/(2*I) d*c/(2*I) 0 0 -(d^2)*k/(2*I) -(d^2)*c/(2*I)];
+A = [
+    0         0         0         0         1       0       0       0;
+    0         0         0         0         0       1       0       0;
+    0         0         0         0         0       0       1       0;
+    0         0         0         0         0       0       0       1;
+   -k/m_t     0         k/m_t    -r*k/m_t  -c/m_t   0       c/m_t  -r*c/m_t;
+    0        -k/m_t     k/m_t     r*k/m_t   0      -c/m_t   c/m_t   r*c/m_t;
+    k/m_p     k/m_p    -2*k/m_p   0         c/m_p   c/m_p  -2*c/m_p 0;
+    -k*r/I    k*r/I     0        -2*k*r/I  -c*r/I   c*r/I   0      -2*c*r/I]
 
 
 %B = [0 0;
@@ -27,16 +37,19 @@ A = [0 1 0 0 0 0 0 0;
 %    0 0];
 
 B = [0 0;
-    1 0;
-    0 0;
-    0 1;
     0 0;
     0 0;
+    0 0;
+    1/m_t 0;
+    0 1/m_t;
     0 0;
     0 0];
 
 C = [0 0 0 0 1 0 0 0;
      0 0 0 0 0 0 1 0];
+ 
+D = [0 0 0 0 0 0 0 0;
+     0 0 0 0 0 0 0 0;];
 
 % determine if system is controllable and observable
 P = horzcat(B, A*B, (A^2)*B, (A^3)*B)
@@ -82,25 +95,25 @@ transpose(B_co);
 % calculate K
 syms s
 
-pole_1 = -2;
-pole_2 = -2;
-pole_3 = -2;
-pole_4 = -2;
-pole_5 = -2;
-pole_6 = -2;
-pole_7 = -2;
-pole_8 = -2;
+pole_1 = -.1;
+pole_2 = -.1;
+pole_3 = -3;
+pole_4 = -3;
+pole_5 = -3;
+pole_6 = -3;
+pole_7 = -3;
+pole_8 = -3;
 
 expand ((s - pole_1)*(s - pole_2)*(s - pole_3)*(s - pole_4)*(s - pole_5)*(s - pole_6)*(s - pole_7)*(s - pole_8))
 
-a7 = 10;
-a6 = 85/2;
-a5 = 100;
-a4 = 2273/16;
-a3 = 995/8;
-a2 = 1045/16;
-a1 = 75/4;
-a0 = 9/4;
+a7 = 91/5;
+a6 = 1381/100;
+a5 = 28539/50;
+a4 = 26487/20;
+a3 = 8532/5;
+a2 = 4131/4;
+a1 = 8019/20;
+a0 = 729/100;
 
 A_eq = [0 1 0 0 0 0 0 0;
         0 0 1 0 0 0 0 0;
@@ -113,10 +126,10 @@ A_eq = [0 1 0 0 0 0 0 0;
     
 expand ((s - pole_1)*(s - pole_3)*(s - pole_5)*(s - pole_7))
 
-a3 = 5;
-a2 = 35/4;
-a1 = 25/4;
-a0 = 3/2;
+a3 = 8532/5;
+a2 = 4131/4;
+a1 = 8019/20;
+a0 = 729/100;
 
 A_eq = [0 1 0 0 0 0 0 0;
         0 0 1 0 0 0 0 0;
@@ -162,13 +175,15 @@ k28 = BK_co(8, 8);
 K_co = [k11 k12 k13 k14 k15 k16 k17 k18;
          k21 k22 k23 k24 k25 k26 k27 k28];
      
-K = K_co*T
+K = K_co*T;
 
 %p = [-.5 -.5 -1 -1 -1.5 -1.5 -2 -2];
-p = [-.5 -1 -1.5 -2 -.5 -1 -1.5 -2];
-K_matlab = place(A, B, p)
+p = [-.1 -.1 -.2 -.2 -.3 -.3 -.4 -.4];
+K_matlab = place(A, B, p);
 
 BK = B*K
+% sys = ss(A,BK,C,D);
+% s = stepinfo(tf(sys));
 BK_matlab = B*K_matlab
 
 % calculate L

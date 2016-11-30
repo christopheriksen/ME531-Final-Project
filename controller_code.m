@@ -6,14 +6,15 @@ m_p = 70.0;  % mass of pod
 c = 2*sqrt(k/m_p);  % damping coefficient
 r = .25;  % radius of pod
 I = m_p*((r)^2)/2;  % inertia of pod
+% State [z1 z2 t z1d z2d td z3d]
 
-A = [0 0 0 1 0 0 0;
-     0 0 0 0 1 0 0;
-     0 0 0 0 0 1 0;
-     -k/m_t 0 0 -c/m_t 0 0 0;
-     0 -k/m_t 0 0 -c/m_t 0 0;
-     -k*r/I k*r/I 0 -c*r/I c*r/I 0 0;
-     k/m_p k/m_p 0 c/m_p c/m_p 0 0];
+A = [0              0              0            1              0              0           0;
+     0              0              0            0              1              0           0;
+     0              0              0            0              0              1           0;
+    -(k/m_p+k/m_t) -k/m_p         -r*k/m_t     -(c/m_p+c/m_t) -c/m_p         -r*c/m_t     0;
+    -k/m_p         -(k/m_p+k/m_t)  r*k/m_t     -c/m_p         -(c/m_p+c/m_t)  r*c/m_t     0;
+    -k*r/I          k*r/I         -2*(r^2)*k/I -c*r/I          c*r/I         -2*(r^2)*c/I 0;
+     k/m_p          k/m_p          0            c/m_p          c/m_p          0           0];
 
 B = [0 0;
      0 0;
