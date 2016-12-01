@@ -16,13 +16,13 @@ A = [0              0              0            1              0              0 
     -k*r/I          k*r/I         -2*(r^2)*k/I -c*r/I          c*r/I         -2*(r^2)*c/I 0;
      k/m_p          k/m_p          0            c/m_p          c/m_p          0           0];
 
-B = [0 0;
-     0 0;
-     0 0;
+B = [0     0;
+     0     0;
+     0     0;
      1/m_t 0;
-     0 1/m_t;
-     0 0;
-     0 0];
+     0     1/m_t;
+     0     0;
+     0     0];
     
 
 C = [0 0 1 0 0 0 0;
@@ -30,13 +30,13 @@ C = [0 0 1 0 0 0 0;
 
 % determine if system is controllable and observable
 P = horzcat(B, A*B, (A^2)*B, (A^3)*B(:,1));
-rank(P)
 
 Q = vertcat(C, C*A, C*(A^2), C(1,:)*(A^3));
-rank(Q)
+%rank(Q)
 
 % transform to controllable canonical form
-M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)));
+% M = horzcat(B(:, 1), A*(B(:, 1)), (A^2)*(B(:, 1)), (A^3)*(B(:, 1)), B(:, 2), A*(B(:, 2)), (A^2)*(B(:, 2)));
+M = [P(:,1)';P(:,3)';P(:,5)';P(:,7)';P(:,2)';P(:,4)';P(:,6)']';
 M_inv = inv(M);
 
 m1 = M_inv(4,:);
@@ -91,13 +91,13 @@ a6 = 6;
 a5 = 11;
 a4 = 6;
 
-A_eq = [0 1 0 0 0 0 0;
-        0 0 1 0 0 0 0;
-        0 0 0 1 0 0 0;
-        -a0 -a1 -a2 -a3 0 0 0;
-        0 0 0 0 0 1 0;
-        0 0 0 0 0 0 1;
-        0 0 0 0 -a4 -a5 -a6];
+A_eq = [ 0   1   0   0   0   0   0;
+         0   0   1   0   0   0   0;
+         0   0   0   1   0   0   0;
+        -a0 -a1 -a2 -a3  0   0   0;
+         0   0   0   0   0   1   0;
+         0   0   0   0   0   0   1;
+         0   0   0   0  -a4 -a5 -a6];
 
 % A_eq = A_new + B_new * K_new
 %syms k11 k12 k13 k14 k15 k16 k21 k22 k23 k24 k25 k26
@@ -111,7 +111,7 @@ A_eq = [0 1 0 0 0 0 0;
 %      0 0 0 0 0 0;
 %      k21 k22 k23 k24 k25 k26]
 
-BK_co = A_co - A_eq;
+BK_co = A_co - A_eq
 
 k11 = BK_co(4, 1);
 k12 = BK_co(4, 2);
@@ -132,95 +132,96 @@ k27 = BK_co(end, 7);
 K_co = [k11 k12 k13 k14 k15 k16 k17;
          k21 k22 k23 k24 k25 k26 k27];
      
-K = K_co*T
+BK = T_inv*BK_co*T
 
 
 p = [-1 -1 -2 -2 -3 -3 -4];
-K_matlab = place(A, B, p)
+k_co = place(A_co, B_co, p)
+K_matlab = place(A, B, p);
 
-BK = B*K
+BK_co_Mat = B*k_co*T
 BK_matlab = B*K_matlab
 
-% % Observer
-% 
-% % transform to observable canonical form
-% U = [C(1,:); C(1,:)*A; C(1,:)*(A^2); C(1,:)*(A^3); C(2,:); C(2,:)*A; C(2,:)*(A^2)];
-% U_inv = inv(U);
-% 
-% u1 = U_inv(:, 4);
-% u2 = U_inv(:, end);
-% 
-% T_ob = horzcat(u1, A*u1, (A^2)*u1, (A^3)*u1, u2, A*u2, (A^2)*u2);
-% T_ob_inv = inv(T_ob);
-% 
-% A_ob = T_ob_inv*A*T_ob
-% transpose(A_co);
-% 
-% B_ob = T_ob_inv*B
-% transpose(C_co);
-% 
-% C_ob = C*T_ob
-% transpose(B_co)
-% 
-% % calculate L
-% %A_eq_ob = A_ob - L*C_ob
-% 
-% pole_1_ob = 3*pole_1;
-% pole_2_ob = 3*pole_2;
-% pole_3_ob = 3*pole_3;
-% pole_4_ob = 3*pole_4;
-% pole_5_ob = 3*pole_5;
-% pole_6_ob = 3*pole_6;
-% pole_7_ob = 3*pole_7;
-% 
-% expand ((s - pole_1_ob)*(s - pole_2_ob)*(s - pole_3_ob)*(s - pole_4_ob)*(s - pole_5_ob)*(s - pole_6_ob)*(s - pole_7_ob))
-% 
-% a6_ob = 48;
-% a5_ob = 954;
-% a4_ob = 10152;
-% a3_ob = 62289;
-% a2_ob = 219672;
-% a1_ob = 411156;
-% a0_ob = 314928;
-% 
-% % A_eq_ob = [0 0 0 0 0 0 -a0_ob;
-% %             1 0 0 0 0 0 -a1_ob;
-% %             0 1 0 0 0 0 -a2_ob;
-% %             0 0 1 0 0 0 -a3_ob;
-% %             0 0 0 1 0 0 -a4_ob;
-% %             0 0 0 0 1 0 -a5_ob;
-% %             0 0 0 0 0 1 -a6_ob];
-%     
-% expand ((s - pole_1_ob)*(s - pole_2_ob)*(s - pole_3_ob)*(s - pole_4_ob))
-% expand ((s - pole_5_ob)*(s - pole_6_ob)*(s - pole_7_ob))
-% 
-% a3_ob = 30;
-% a2_ob = 315;
-% a1_ob = 1350;
-% a0_ob = 1944;
-% 
-% a6_ob = 18;
-% a5_ob = 99;
-% a4_ob = 162;
-% 
-% A_eq_ob = [0 0 0 -a0_ob 0 0 0;
-%             1 0 0 -a1_ob 0 0 0;
-%             0 1 0 -a2_ob 0 0 0;
-%             0 0 1 -a3_ob 0 0 0;
-%             0 0 0 0 0 0 -a4_ob;
+% Observer
+
+% transform to observable canonical form
+U = [C(1,:); C(1,:)*A; C(1,:)*(A^2); C(1,:)*(A^3); C(2,:); C(2,:)*A; C(2,:)*(A^2)];
+U_inv = inv(U);
+
+u1 = U_inv(:, 4);
+u2 = U_inv(:, end);
+
+T_ob = horzcat(u1, A*u1, (A^2)*u1, (A^3)*u1, u2, A*u2, (A^2)*u2);
+T_ob_inv = inv(T_ob);
+
+A_ob = T_ob_inv*A*T_ob
+transpose(A_co);
+
+B_ob = T_ob_inv*B
+transpose(C_co);
+
+C_ob = C*T_ob
+transpose(B_co)
+
+% calculate L
+%A_eq_ob = A_ob - L*C_ob
+
+pole_1_ob = 3*pole_1;
+pole_2_ob = 3*pole_2;
+pole_3_ob = 3*pole_3;
+pole_4_ob = 3*pole_4;
+pole_5_ob = 3*pole_5;
+pole_6_ob = 3*pole_6;
+pole_7_ob = 3*pole_7;
+
+expand ((s - pole_1_ob)*(s - pole_2_ob)*(s - pole_3_ob)*(s - pole_4_ob)*(s - pole_5_ob)*(s - pole_6_ob)*(s - pole_7_ob))
+
+a6_ob = 48;
+a5_ob = 954;
+a4_ob = 10152;
+a3_ob = 62289;
+a2_ob = 219672;
+a1_ob = 411156;
+a0_ob = 314928;
+
+% A_eq_ob = [0 0 0 0 0 0 -a0_ob;
+%             1 0 0 0 0 0 -a1_ob;
+%             0 1 0 0 0 0 -a2_ob;
+%             0 0 1 0 0 0 -a3_ob;
+%             0 0 0 1 0 0 -a4_ob;
 %             0 0 0 0 1 0 -a5_ob;
 %             0 0 0 0 0 1 -a6_ob];
-% 
-% LC_ob = A_ob - A_eq_ob;
-% L1 = LC_ob(:,4);
-% L2 = LC_ob(:,end);
-% 
-% L_ob = horzcat(L1, L2);
-% 
-% L = T_ob*L_ob
-% 
-% p_ob = [pole_1_ob pole_2_ob pole_3_ob pole_4_ob pole_5_ob pole_6_ob pole_7_ob];
-% L_matlab = place(A', C', p_ob).'
-% 
-% LC = L*C
-% LC_matlab = L_matlab*C
+    
+expand ((s - pole_1_ob)*(s - pole_2_ob)*(s - pole_3_ob)*(s - pole_4_ob))
+expand ((s - pole_5_ob)*(s - pole_6_ob)*(s - pole_7_ob))
+
+a3_ob = 30;
+a2_ob = 315;
+a1_ob = 1350;
+a0_ob = 1944;
+
+a6_ob = 18;
+a5_ob = 99;
+a4_ob = 162;
+
+A_eq_ob = [0 0 0 -a0_ob 0 0 0;
+            1 0 0 -a1_ob 0 0 0;
+            0 1 0 -a2_ob 0 0 0;
+            0 0 1 -a3_ob 0 0 0;
+            0 0 0 0 0 0 -a4_ob;
+            0 0 0 0 1 0 -a5_ob;
+            0 0 0 0 0 1 -a6_ob];
+
+LC_ob = A_ob - A_eq_ob;
+L1 = LC_ob(:,4);
+L2 = LC_ob(:,end);
+
+L_ob = horzcat(L1, L2);
+
+L = T_ob*L_ob
+
+p_ob = [pole_1_ob pole_2_ob pole_3_ob pole_4_ob pole_5_ob pole_6_ob pole_7_ob];
+L_matlab = place(A', C', p_ob).'
+
+LC = L*C
+LC_matlab = L_matlab*C
