@@ -34,16 +34,23 @@ BK =    [0         0         0         0         0         0         0;
          0         0         0         0         0         0         0;];
 
 
-t = [0.0:0.01:100];
+% t = [0.0:0.01:100];
+t = [0.0:0.1:10];
 theta = 0.5;
 vel = 1.0;
-x0 = [0;0;0.0;0.0;0.0;0.0;0.0];
-% target = [-r*theta;r*theta;theta;0;0;0.0;vel];
-target = [0;0;theta;0;0;0.0;vel];
+x0 = [0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0];
+% target = [-r*sin(theta);r*sin(theta);theta;0;0;0.0;vel];
+% target = [0;0;theta;0;0;0.0;vel];
+
+target = [-r*sin(theta);r*sin(theta);theta;0;0;0.0;vel];
+x0 =     [-r*sin(theta);r*sin(theta);theta;0;0;0.0;0.0];
+
 opts = odeset('RelTol',1e-2,'AbsTol',1e-4);
 [t, y] = ode45(@(t,y) controller(t,y,target), t, x0, opts);
-plot(t, y(:,3),t,y(:,1),t,y(:,2),t, y(:,7))
+% plot(t, y(:,3),t,y(:,1),t,y(:,2),t, y(:,7))
 %t, y(:,7), t, y(:,3), t, y(:,4), t, y(:,5)
+
+plot(t, y(:,7),t, y(:,3))
 
 function xdot = controller(t, x, target)
     xdot = [0;
@@ -58,15 +65,20 @@ function xdot = controller(t, x, target)
     xdot(1) = x(4);
     xdot(2) = x(5);
     xdot(3) = x(6);
-    xdot(4) = -k*(1/m_t+1/m_p)*x(1) - k/m_p*x(2) - r*k/m_t*sin(x(3)) - c*(1/m_t+1/m_p)*x(4) - c/m_p*x(5) - r*c/m_t*x(6)*cos(x(3)) + f1;
-    xdot(5) = -k/m_p*x(1) - k*(1/m_t+1/m_p)*x(2) + r*k/m_t*sin(x(3)) - c/m_p*x(4) - c*(1/m_t+1/m_p)*x(5) + r*c/m_t*x(6)*cos(x(3)) + f2;
-    xdot(6) = -k*r/I*x(1)*cos(x(3)) + k*r/I*x(2)*cos(x(3)) - 2*k*r*r/I*sin(x(3))*cos(x(3)) - c*r/I*x(4)*cos(x(3)) + c*r/I*x(5)*cos(x(3)) - 2*c*r*r/I*x(6)*(cos(x(3))^2);
-    xdot(7) = k/m_p*x(1) + k/m_p*x(2) + c/m_p*x(4) + c/m_p*x(5);
+    xdot(4) = -(k/m_t)*(x(1) + r*sin(x(3)) -(k/m_p))*(x(1) + x(2)) -(c/m_t)*(x(4) + r*x(6)*cos(x(3))) -(c/m_p)*(x(4) + x(5)) + f1;
+%     xdot(4) = -k*((1/m_t)+(1/m_p))*x(1) - (k/m_p)*x(2) - r*(k/m_t)*sin(x(3)) - c*(1/m_t+1/m_p)*x(4) - c/m_p*x(5) - r*c/m_t*x(6)*cos(x(3)); % + f1;
+    xdot(5) = -(k/m_t)*(x(2) - r*sin(x(3)) -(k/m_p))*(x(1) + x(2)) -(c/m_t)*(x(5) - r*x(6)*cos(x(3))) -(c/m_p)*(x(4) + x(5)) + f2;
+%     xdot(5) = -k/m_p*x(1) - k*(1/m_t+1/m_p)*x(2) + r*k/m_t*sin(x(3)) - c/m_p*x(4) - c*(1/m_t+1/m_p)*x(5) + r*c/m_t*x(6)*cos(x(3)); % + f2;
+    xdot(6) = r*cos(x(3))/I*( k*(-x(1) + x(2) - 2*r*sin(x(3))) + c*(-x(4) + x(5) - 2*r*x(6)*cos(x(3))) );
+    xdot(7) = k/m_p*(x(1) + x(2)) + c/m_p*(x(4) + x(5));
 %     xdot(4) = -k*(1/m_t+1/m_p)*x(1) - k/m_p*x(2) - r*k/m_t*x(3) - c*(1/m_t+1/m_p)*x(4) - c/m_p*x(5) - r*c/m_t*x(6) + f1;
 %     xdot(5) = -k/m_p*x(1) - k*(1/m_t+1/m_p)*x(2) + r*k/m_t*x(3) - c/m_p*x(4) - c*(1/m_t+1/m_p)*x(5) + r*c/m_t*x(6) + f2;
 %     xdot(6) = -k*r/I*x(1) + k*r/I*x(2) - 2*k*r*r/I*x(3) - c*r/I*x(4) + c*r/I*x(5) - 2*c*r*r/I*x(6);
 %     xdot(7) = k/m_p*x(1) + k/m_p*x(2) + c/m_p*x(4) + c/m_p*x(5);
 %     
+
+    x;
+    xdot;
     
     
     function Fd = F(t)
@@ -80,10 +92,10 @@ function xdot = controller(t, x, target)
     end
     function [F_1,F_2] = F12(x,target)
         x_err = target - x;
-        x_err(1) = x_err(1) + r*sin(x(3));
-        x_err(2) = x_err(2) - r*sin(x(3));
-        x_err(4) = x_err(4) + r*x(6)*cos(x(3));
-        x_err(5) = x_err(5) - r*x(6)*cos(x(3));
+%         x_err(1) = x_err(1) + r*sin(x(3));
+%         x_err(2) = x_err(2) - r*sin(x(3));
+%         x_err(4) = x_err(4) + r*x(6)*cos(x(3));
+%         x_err(5) = x_err(5) - r*x(6)*cos(x(3));
         action = BK*x_err;
         F_1 = action(4);
         F_2 = action(5);
