@@ -74,7 +74,7 @@ function xdot = controller(t, x, target)
   
     function Fd = F(t)
         if t>30.0
-            Fd = sin(t*pi/5);
+            Fd = 0;%sin(t*pi/5);
         elseif t > 15.2
             Fd = 0.0;
         elseif t >= 15.0
