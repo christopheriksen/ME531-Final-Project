@@ -34,37 +34,77 @@ clear
              0         0         0         0         0         0         0         0;];
 
 
-    frame_info = system_graphs_create_elements
-%     frame_info_system = system_create_elements
+frame_info = graphs_create_elements
 
     
     x0 = [0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0];
     t = [0.0:0.1:200];
-    target = [0;0;0;0;0;1.0;0.0;0;];
+    target = [0;0;0;0;0;1;0.0;0;];
     opts = odeset('RelTol',1e-2,'AbsTol',1e-4);
     [t, y] = ode45(@(t,y) controller(t,y,target), t, x0, opts);
-    data = [t, y];
+    t_sys = t;
+    y_sys = y;
     % plot(t, y(:,2),t, y(:,4),t, y(:,6),t, y(:,7));
 
     
-% Designate animation function
-frame_gen_function = @(frame_info,tau) animation_graphs(t,y,frame_info,tau); % frame function, defined below in file
+% % Designate animation function
+% frame_gen_function = @(frame_info,tau) animation_graphs(t,y,frame_info,tau); % frame function, defined below in file
+% 
+% % Declare timing
+% timing.duration = 10; % three second animation
+% timing.fps = 15;     % create frames for 15 fps animation
+% timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
+% 
+% % Declare a directory name in which to place files
+% destination = 'system_graphs';
+% 
+% % Animate the movie
+% [frame_info, endframe]...
+%     = animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));    
 
+
+frame_info = system_create_elements
+
+% Designate animation function
+frame_gen_function = @(frame_info,tau) animation_system(t_sys,y_sys,frame_info,tau); % frame function, defined below in file
+ 
 % Declare timing
 timing.duration = 5; % three second animation
 timing.fps = 15;     % create frames for 15 fps animation
 timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
 
 % Declare a directory name in which to place files
-destination = 'system_graphs';
+destination = 'system_plots';
 
 % Animate the movie
 [frame_info, endframe]...
     = animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));    
+
+function h = graphs_create_elements
+    h.f = figure(1);                            % Designate a figure for this animation
+    clf(h.f)                                     % Clear this figure
+    set(h.f,'color','w','InvertHardCopy','off')  % Set this figure to have a white background
+                                             %  and to maintain color
+                                             %  settings during printing
+
+    h.ax = axes('Parent',h.f);                   % Create axes for the plot
+    set(h.ax,'Xlim',[0 200],'Ylim',[0 1]);   % Set the range of the plot
+    set(h.ax,'Xtick',0:20:200,'YTick',0:.1:1);   % Set the tick locations
+    set(h.ax,'FontSize',20);                       % Set the axis font size
+    xlabel(h.ax, 't (s)')							 % Label the axes
+    ylabel(h.ax, 'v (m/s)')
+    set(h.ax,'Box','on')						 % put box all the way around the axes
+    title(h.ax, 'System Graphs')
     
- 
-function h = system_graphs_create_elements
-    h.f = figure(17);                            % Designate a figure for this animation
+    % Line element to be used to draw the path
+    h.line1 = line(0,0,'Color',[255 0 150]/255,'linewidth',1,'Parent',h.ax);
+    h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',1,'Parent',h.ax);
+    h.line3 = line(0,0,'Color',[255 0 0]/255,'linewidth',1,'Parent',h.ax);
+    h.line4 = line(0,0,'Color',[255 150 100]/255,'linewidth',1,'Parent',h.ax);
+end   
+
+function h = system_create_elements
+    h.f = figure(2);                            % Designate a figure for this animation
     clf(h.f)                                     % Clear this figure
     set(h.f,'color','w','InvertHardCopy','off')  % Set this figure to have a white background
                                              %  and to maintain color
@@ -78,37 +118,74 @@ function h = system_graphs_create_elements
     ylabel(h.ax, 'y (m)')
     set(h.ax,'Box','on')						 % put box all the way around the axes
     axis equal
+    title(h.ax, 'System Sim')
     
     % Line element to be used to draw the path
-    h.line1 = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
-    h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',5,'Parent',h.ax);
-    h.line3 = line(0,0,'Color',[0 255 0]/255,'linewidth',5,'Parent',h.ax);
-    h.line4 = line(0,0,'Color',[255 0 0]/255,'linewidth',5,'Parent',h.ax);
+    h.line1 = line(0,0,'Color',[235 14 30]/255,'linewidth',2,'Parent',h.ax);
+    h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',2,'Parent',h.ax);
+    h.line3 = line(0,0,'Color',[0 255 0]/255,'linewidth',2,'Parent',h.ax);
+    h.line4 = line(0,0,'Color',[255 0 0]/255,'linewidth',2,'Parent',h.ax);
 end   
 
-function frame_info = animation_graphs(t,y,frame_info,tau)
-%     % Declare a baseline set of points at which to evaluate the cosine
-% 	% function
-% 	x_full = linspace(-5,5,300)';
-% 	
-% 	% Truncate the points to the percentage of the way through drawing
-% 	x = x_full(1:round(tau*length(x_full)),:);
-% 
-% 	% Evaluate the cosine function at the x points;
-% 	a = sin(x);
-% 	z = sin(x);
-%     set(frame_info.line1,'XData',x,'YData',a);
-%     set(frame_info.line1,'XData',t,'YData',y(:,1))
-    if ~isempty(t)
-        t1 = get_square(2,2,1,1,0);  
-        set(frame_info.line1,'XData',t1(1,:),'YData',t1(2,:));
-        t2 = get_square(-2,2,1,1,0);
-        set(frame_info.line2,'XData',t2(1,:),'YData',t2(2,:));
-        t3 = get_square(0,0,1,1,0);
-        set(frame_info.line3,'XData',t3(1,:),'YData',t3(2,:));
-    end
 
-     
+function frame_info = animation_graphs(t,y,frame_info,tau)
+        step = .1;
+        step_end = t(end);
+        cur_step = t(1:round(tau*length(t)),:);
+        index = round(((cur_step)/step)+1);
+        
+        t1_velocity = y(:,2);
+        t2_velocity = y(:,4);
+        t3_velocity = y(:,6);
+        t3_ang = y(:,7);
+        t1_velocity(index)
+        set(frame_info.line1,'XData',t(index),'YData',t1_velocity(index));
+        set(frame_info.line2,'XData',t(index),'YData',t2_velocity(index));
+        set(frame_info.line3,'XData',t(index),'YData',t3_velocity(index));
+        set(frame_info.line4,'XData',t(index),'YData',t3_ang(index));
+	frame_info.printmethod = @(dest) print(frame_info.f,'-dpng','-r 150','-painters',dest);
+end
+
+function frame_info = animation_system(t,y,frame_info,tau) 
+    step = .1;
+    step_end = t(end);
+    cur_step_system = t(1:round(tau*length(t)),:);
+    index_system = round(((cur_step_system)/step)+1);
+    dy_timestep = (y(:,4)*(t(end)-t(end-1)));
+    total_distace = cumsum(dy_timestep);
+
+    array_x = repmat(0,1,2001);
+    dx_timestep = (array_x(1,:)*(t(end)-t(end-1)));
+
+%     step = .1;
+%     step_end = t(end);
+
+      center_y_timestep = 2+total_distace(index_system);
+      y_timestep_d = center_y_timestep(1:round(tau*length(center_y_timestep)),:);
+      x_y = y_timestep_d
+      
+      in = length(index_system)
+      center_x_timestep = 2+dx_timestep(index_system);
+      c_t = length(center_x_timestep)
+      x_timestep_d = center_x_timestep(1:round(tau*length(center_x_timestep)),:);
+
+      
+%       x_timestep_t = array_x(1:round(tau*length(array_x)),:)
+%     index_system = round(((cur_step)/step)+1)
+%     d_timestep = (y(:,4)*(t(end)-t(end-1)));
+%     total_distace = cumsum(d_timestep);
+
+    if ~isempty(t)
+
+
+%         t1 = get_square(x_timestep_d(end),y_timestep_d(end),1,1,0);  
+%         set(frame_info.line1,'XData',t1(1,:),'YData',t1(2,:));
+%         t2 = get_square(-2,2,1,1,0);
+%         set(frame_info.line2,'XData',t2(1,:),'YData',t2(2,:));
+%         p = get_square(0,0,1,1,0);
+%         set(frame_info.line3,'XData',p(1,:),'YData',p(2,:));
+    end
+    
 %     
 %     set(frame_info.line1,'XData',t,'YData',y(:,2));
 %     set(frame_info.line2,'XData',t,'YData',y(:,4));
@@ -116,7 +193,6 @@ function frame_info = animation_graphs(t,y,frame_info,tau)
 %     set(frame_info.line4,'XData',t,'YData',y(:,7));
 	frame_info.printmethod = @(dest) print(frame_info.f,'-dpng','-r 150','-painters',dest);
 end
-
 
 function [square] = get_square(centerX, centerY,width,height, orientation)
     %        x3,x4
@@ -137,19 +213,20 @@ function [square] = get_square(centerX, centerY,width,height, orientation)
     R = [ct -st;st ct];
     P = R * P;
     X_values = P(1,:)+a;
-    gen_pt_num = 3
+    gen_pt_num = 50;
     top_array = (linspace(X_values(1),X_values(2),gen_pt_num));
     right_array = (linspace(X_values(2),X_values(3),gen_pt_num));
     bottom_array = (linspace(X_values(3),X_values(4),gen_pt_num));
     left_array = (linspace(X_values(4),X_values(5),gen_pt_num));
     tot_x_array = [top_array,right_array,bottom_array,left_array];
     Y_values = P(2,:)+b;
+  
     top_array = (linspace(Y_values(1),Y_values(2),gen_pt_num));
     right_array = (linspace(Y_values(2),Y_values(3),gen_pt_num));
     bottom_array = (linspace(Y_values(3),Y_values(4),gen_pt_num));
     left_array = (linspace(Y_values(4),Y_values(5),gen_pt_num));
     tot_y_array = [top_array,right_array,bottom_array,left_array];
-    tot_array = [tot_x_array;tot_y_array]
+    tot_array = [tot_x_array;tot_y_array];
 %     h=plot(P(1,:)+a,P(2,:)+b);
 %     axis equal;
     square = [tot_x_array;tot_y_array];
