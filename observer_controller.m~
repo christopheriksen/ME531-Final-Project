@@ -33,16 +33,16 @@ LC = [0         0   -9.0417         0         0         0    5.1088;
       0         0  264.2282         0         0         0         0;
       0         0    0.0000         0         0         0   17.7404];
 
-t = [0.0:0.01:100];
+t = [0.0:0.01:30];
 theta = 0.5;
 vel = 1.0;
 
 target = [-r*sin(theta);r*sin(theta);theta;0;0;0.0;vel];
-x0 =     [0;0;theta;0;0;0.0;0.0;0;0;0;0;0;0;0];
+x0 =     [0;0;0.0;theta;0;0.0;0.0;0;0;0;0;0;0;0];
 
 opts = odeset('RelTol',1e-2,'AbsTol',1e-4);
 [t, y] = ode45(@(t,y) controller(t,y,target), t, x0, opts);
-plot(t, y(:,3),t, y(:,7), t, y(:,10), t, y(:,14), t, y(:,1),t, y(:,2),t, y(:,8),t, y(:,9))
+plot(t, y(:,3),t, y(:,7), t, y(:,10), t, y(:,14))
 
 function xdot = controller(t, x, target)
     xdot = [0;
@@ -66,16 +66,14 @@ function xdot = controller(t, x, target)
     xdot(1) = x(4);
     xdot(2) = x(5);
     xdot(3) = x(6);
-    xdot(4) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(1) - c*x(4) - r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t + f1;
+    xdot(4) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(1) - c*x(4) - r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t;
     xdot(5) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(2) - c*x(5) + r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t + f2;
     xdot(6) = r*cos(x(3)) * (k*(x(2) - x(1)) + c*(x(5) - x(4)) -2*r*(k*sin(x(3)) + c*x(6)*cos(x(3)))) / I;
     xdot(7) = k*(x(1) + x(2))/m_p + c*(x(4) + x(5))/m_p + f/m_p;
     xdot(8:14) = A*xhat + LC*(xtrue-xhat) + BK*(target - xhat);
   
     function Fd = F(t)
-        if t>30.0
-            Fd = sin(t*pi/5);
-        elseif t > 15.2
+        if t > 15.2
             Fd = 0.0;
         elseif t >= 15.0
             Fd = 200.0;
