@@ -1,4 +1,4 @@
-function simulator7
+function controller_simulator
 clc
 clear
 
@@ -17,6 +17,7 @@ A = [0              0              0            1              0              0 
     -k*r/I          k*r/I         -2*(r^2)*k/I -c*r/I          c*r/I         -2*(r^2)*c/I 0;
      k/m_p          k/m_p          0            c/m_p          c/m_p          0           0];
  
+ 
 BK =    [-0.0000    0.0000   -0.0000   -0.0000    0.0000   -0.0000    0.0000;
    -0.0000    0.0000   -0.0000    0.0000    0.0000   -0.0000    0.0000;
     0.0000   -0.0000    0.0000   -0.0000   -0.0000   -0.0000    0.0000;
@@ -25,16 +26,26 @@ BK =    [-0.0000    0.0000   -0.0000   -0.0000    0.0000   -0.0000    0.0000;
     0.0000   -0.0000    0.0000    0.0000   -0.0000    0.0000    0.0000;
    -0.0000    0.0000   -0.0000   -0.0000    0.0000   -0.0000   -0.0000;];
 
-t = [0.0:0.01:100];
-theta = 0.5;
+
+% BK =    [0         0         0         0         0         0         0;
+%          0         0         0         0         0         0         0;
+%          0         0         0         0         0         0         0;
+%    -8.7265   -4.6233   -1.2358    7.6640   -1.9236    1.9617    0.4200;
+%    -4.6233   -8.7265    1.2358   -1.9236    7.6640   -1.9617    0.4200;
+%          0         0         0         0         0         0         0;
+%          0         0         0         0         0         0         0];
+
+t = [0.0:0.01:1];
+theta = 0.1;
 vel = 1.0;
 
-target = [-r*sin(theta);r*sin(theta);theta;0;0;0.0;vel];
-x0 =     [0;0;theta;0;0;0.0;0.0];
+target = [-r*sin(theta); r*sin(theta); theta; 0; 0; 0.0; vel];
+x0 =     [0.0; 0.0; theta; 0; 0; 0.0; 0.0];
+% x0 =     [-r*sin(theta);r*sin(theta);theta;0;0;0.0;vel];
 
 opts = odeset('RelTol',1e-2,'AbsTol',1e-4);
 [t, y] = ode45(@(t,y) controller(t,y,target), t, x0, opts);
-plot(t, y(:,7), t, y(:,3))
+plot(t,y(:,7), t,y(:,3), t,y(:,1), t,y(:,2))
 
 function xdot = controller(t, x, target)
     xdot = [0;
@@ -49,11 +60,18 @@ function xdot = controller(t, x, target)
     xdot(1) = x(4);
     xdot(2) = x(5);
     xdot(3) = x(6);
-    xdot(4) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(1) - c*x(4) - r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t + f1;
-    xdot(5) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(2) - c*x(5) + r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t + f2;
-    xdot(6) = r*cos(x(3)) * (k*(x(2) - x(1)) + c*(x(5) - x(4)) -2*r*(k*sin(x(3)) + c*x(6)*cos(x(3)))) / I;
-    xdot(7) = k*(x(1) + x(2))/m_p + c*(x(4) + x(5))/m_p;% + f/m_p;
+%     xdot(4) = (-(k/m_t)*(x(1) + r*sin(x(3))) -(k/m_p)*(x(1) + x(2))) + (-(c/m_t)*(x(4) + r*x(6)*cos(x(3))) -(c/m_p)*(x(4) + x(5))); %+ f1;
+%     xdot(5) = (-(k/m_t)*(x(2) - r*sin(x(3))) -(k/m_p)*(x(1) + x(2))) + (-(c/m_t)*(x(5) - r*x(6)*cos(x(3))) -(c/m_p)*(x(4) + x(5))); %+ f2;
+    
+    xdot(4) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(1) - c*x(4) - r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t; %+ f1;
+    xdot(5) = (-k*(x(1)+x(2)) - c*(x(4)+x(5)))/m_p + (-k*x(2) - c*x(5) + r*(k*sin(x(3)) + c*x(6)*cos(x(3))))/m_t; %+ f2;
 
+ 
+%     xdot(6) = (k*(-x(1) + x(2) -2*r*sin(x(3))) + c*(-x(4) + x(5) -2*r*x(6)*cos(x(3))))*(r*cos(x(3))/I);
+    
+    xdot(6) = (k*(x(2) - x(1)) + c*(x(5) - x(4)) -2*r*(k*sin(x(3)) + c*x(6)*cos(x(3))))*r*cos(x(3))/ I;
+    xdot(7) = (k/m_p)*(x(1) + x(2)) + (c/m_p)*(x(4) + x(5)); % + f/m_p;
+    
   
     function Fd = F(t)
         if t>30.0
